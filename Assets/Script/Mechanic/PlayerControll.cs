@@ -1,11 +1,15 @@
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class PlayerControll : MonoBehaviour
 {
     [Header("Components")]
     public Animator animator;
     public Rigidbody2D rb;
+    public int maxHealth = 10;
+    public Text health;
 
     [Header("Movement")]
     public float moveSpeed = 5f;
@@ -29,8 +33,8 @@ public class PlayerControll : MonoBehaviour
 
     [Header("Attack")]
     public Transform attackPoint;
-    public float attackRange = 0.5f;
-    public LayerMask enemyLayers;
+    public float attackRadius = 0.5f;
+    public LayerMask attackLayer;
 
     public float attackDamage = 10f;
     public float slamDamage = 25f;
@@ -40,6 +44,15 @@ public class PlayerControll : MonoBehaviour
 
     void Update()
     {
+        if (FindFirstObjectByType<GameManager>().isGameActive == false)
+        if (maxHealth <=0)
+        {
+            Die();
+        }
+
+        health.text = maxHealth.ToString();
+
+
         // ================= MOVE =================
         movement = Input.GetAxis("Horizontal");
         rb.linearVelocity = new Vector2(movement * moveSpeed, rb.linearVelocity.y);
@@ -126,25 +139,24 @@ public class PlayerControll : MonoBehaviour
     // ================= ANIMATION EVENTS =================
 
     // 🔥 PANGGIL DI FRAME PEDANG KENA
-    public void DealAttackDamage()
+    public void Attack()
     {
-        if (attackPoint == null) return;
-
-        Collider2D[] enemies = Physics2D.OverlapCircleAll(
-            attackPoint.position,
-            attackRange,
-            enemyLayers
-        );
-
-        foreach (Collider2D enemy in enemies)
+        Collider2D collInfo = Physics2D.OverlapCircle(attackPoint.position, attackRadius, attackLayer);
+        if (collInfo)
         {
-            if (hitEnemies.Contains(enemy)) continue;
+        if (collInfo.gameObject.GetComponent<EnemyPatrol>() != null)
+            {
+                collInfo.gameObject.GetComponent<EnemyPatrol>().TakeDamage(1);
+            }
+        }
+    }
 
-            hitEnemies.Add(enemy);
-
-            EnemyHealth hp = enemy.GetComponent<EnemyHealth>();
-            if (hp != null)
-                hp.TakeDamage(attackDamage);
+    private void OnDrawGizmosSelected()
+    {
+        if (attackPoint == null)
+        return;
+        {
+        Gizmos.DrawWireSphere(attackPoint.position, attackRadius);
         }
     }
 
@@ -157,14 +169,6 @@ public class PlayerControll : MonoBehaviour
     // ================= COLLISION =================
     private void OnCollisionEnter2D(Collision2D collision)
     {
-        if (collision.gameObject.CompareTag("Enemy") &&
-            animator.GetCurrentAnimatorStateInfo(0).IsName("GroundSlam"))
-        {
-            EnemyHealth hp = collision.gameObject.GetComponent<EnemyHealth>();
-            if (hp != null)
-                hp.TakeDamage(slamDamage);
-        }
-
         if (!collision.gameObject.CompareTag("Ground"))
             return;
 
@@ -211,10 +215,21 @@ public class PlayerControll : MonoBehaviour
         transform.eulerAngles = new Vector3(0f, facingRight ? 0f : 180f, 0f);
     }
 
-    void OnDrawGizmosSelected()
+
+       public void TakeDamage(int damage)
     {
-        if (attackPoint == null) return;
-        Gizmos.color = Color.red;
-        Gizmos.DrawWireSphere(attackPoint.position, attackRange);
+        if (maxHealth <= 0 )
+        {
+            return;
+        }
+        maxHealth -= damage;
+
+    }
+
+    void Die()
+    {
+        Debug.Log("player die");
+        FindAnyObjectByType<GameManager>().isGameActive = false;
+        Destroy(this.gameObject);
     }
 }
