@@ -6,37 +6,58 @@ public class EnemyPatrol : MonoBehaviour
     public Transform checkPoint;
     public float distance = 1f;
     public LayerMask layerMask;
+    public bool inRange = false;
+    public Transform player;
+    public float attackRange = 10f;
+    public float retrieveDistance = 2.5f;
+    public float chaseSpeed = 4f;
+    public Animator animator;
 
     private bool facingLeft = true;
 
-    void Update()
+
+
+   
+   
+   
+   void Update()
     {
-        // 1️⃣ Gerak sesuai arah
-        float dir = facingLeft ? -1f : 1f;
-        transform.Translate(Vector2.right * dir * moveSpeed * Time.deltaTime);
-
-        // 2️⃣ Raycast ke bawah (cek ground)
-        RaycastHit2D hit = Physics2D.Raycast(
-            checkPoint.position,
-            Vector2.down,
-            distance,
-            layerMask
-        );
-
-        // 3️⃣ Kalau ga ada ground → balik arah
-        if (!hit.collider)
+        if (Vector2.Distance(transform.position, player.position) <= attackRange)
         {
-            Flip();
+            inRange = true;
         }
-    }
+        else {
+            inRange = false;
+        }
 
-    void Flip()
-    {
-        facingLeft = !facingLeft;
+        if (inRange)
+        {
+            if (Vector2.Distance(transform.position, player.position) > retrieveDistance)
+            {
+                animator.SetBool("Attack", false);
+                transform.position = Vector2.MoveTowards(transform.position, player.position, chaseSpeed * Time.deltaTime);
+            }
+            else
+            {
+                animator.SetBool("Attack", true);
+            }
+        }
+        else
+        {
+            transform.Translate(Vector2.left * Time.deltaTime * moveSpeed);
+            RaycastHit2D hit = Physics2D.Raycast(checkPoint.position, Vector2.down, distance, layerMask);
 
-        Vector3 scale = transform.localScale;
-        scale.x *= -1;
-        transform.localScale = scale;
+            if (hit == false && facingLeft)
+            {
+                transform.eulerAngles = new Vector3(0, -180, 0);
+                facingLeft = false;
+            }
+            else if (hit == false && facingLeft == false)
+            {
+                transform.eulerAngles = new Vector3(0, 0, 0);
+                facingLeft = true;
+            }
+        } 
     }
 
     void OnDrawGizmosSelected()
