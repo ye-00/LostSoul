@@ -147,6 +147,7 @@ public class PlayerControll : MonoBehaviour
         if (collInfo.gameObject.GetComponent<EnemyPatrol>() != null)
             {
                 collInfo.gameObject.GetComponent<EnemyPatrol>().TakeDamage(1);
+                 Camera.main.GetComponent<CameraShake>().Shake();
             }
         }
     }

@@ -39,6 +39,7 @@ Transform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!212 &1618348581824293033
 SpriteRenderer:
+  serializedVersion: 2
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -84,6 +85,7 @@ SpriteRenderer:
   m_SortingLayerID: 1798849799
   m_SortingLayer: -1
   m_SortingOrder: 0
+  m_MaskInteraction: 0
   m_Sprite: {fileID: -3316437661583186769, guid: 69748c7ae307bfa7c950f9d87ca243c5, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
@@ -93,7 +95,6 @@ SpriteRenderer:
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
-  m_MaskInteraction: 0
   m_SpriteSortPoint: 0
 --- !u!50 &2866264911384397882
 Rigidbody2D:
@@ -182,19 +183,19 @@ MonoBehaviour:
   m_EditorClassIdentifier: '::'
   animator: {fileID: 6779341259505058822}
   rb: {fileID: 2866264911384397882}
-  JumpHeight: 10
+  maxHealth: 10
+  health: {fileID: 0}
   moveSpeed: 6
+  JumpHeight: 10
   isGround: 1
   maxJumps: 2
   groundSlamSpeed: -12
   attackPoint: {fileID: 6877400360987284012}
-  attackRange: 0.5
-  enemyLayers:
+  attackRadius: 0.5
+  attackLayer:
     serializedVersion: 2
-    m_Bits: 8
+    m_Bits: 0
   attackDamage: 3
-  attack2Damage: 2
-  airAttackDamage: 4
   slamDamage: 9
 --- !u!95 &6779341259505058822
 Animator:

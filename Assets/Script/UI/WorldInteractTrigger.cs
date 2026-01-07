@@ -15,6 +15,8 @@ public class WorldInteractTrigger : MonoBehaviour
 
     void OnTriggerEnter2D(Collider2D other)
     {
+        if (!gameObject.activeInHierarchy) return;
+
         if (other.CompareTag("Player"))
         {
             FadeUI(true);
@@ -23,6 +25,8 @@ public class WorldInteractTrigger : MonoBehaviour
 
     void OnTriggerExit2D(Collider2D other)
     {
+        if (!gameObject.activeInHierarchy) return;
+
         if (other.CompareTag("Player"))
         {
             FadeUI(false);
@@ -31,6 +35,10 @@ public class WorldInteractTrigger : MonoBehaviour
 
     void FadeUI(bool show)
     {
+        // 🔥 FIX UTAMA: jangan start coroutine kalau object inactive
+        if (!gameObject.activeInHierarchy)
+            return;
+
         if (fadeRoutine != null)
             StopCoroutine(fadeRoutine);
 
@@ -39,6 +47,9 @@ public class WorldInteractTrigger : MonoBehaviour
 
     IEnumerator Fade(bool show)
     {
+        if (interactUI == null)
+            yield break;
+
         float start = interactUI.alpha;
         float end = show ? 1f : 0f;
 
@@ -48,6 +59,10 @@ public class WorldInteractTrigger : MonoBehaviour
         float t = 0f;
         while (t < fadeDuration)
         {
+            // 🔥 SAFETY: kalau object mati di tengah fade
+            if (!gameObject.activeInHierarchy)
+                yield break;
+
             t += Time.deltaTime;
             interactUI.alpha = Mathf.Lerp(start, end, t / fadeDuration);
             yield return null;
@@ -58,6 +73,8 @@ public class WorldInteractTrigger : MonoBehaviour
 
     void SetUIInstant(bool show)
     {
+        if (interactUI == null) return;
+
         interactUI.alpha = show ? 1f : 0f;
         interactUI.interactable = show;
         interactUI.blocksRaycasts = show;

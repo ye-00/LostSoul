@@ -1,5 +1,3 @@
-using NUnit.Framework.Internal;
-using Unity.VisualScripting;
 using UnityEngine;
 
 public class EnemyPatrol : MonoBehaviour
@@ -21,113 +19,118 @@ public class EnemyPatrol : MonoBehaviour
 
     private bool facingLeft = true;
 
-
-
-   
-   
-   
-   void Update()
+    void Update()
     {
-         if (maxHealth <= 0)
+        if (maxHealth <= 0)
         {
             Die();
+            return;
         }
 
+        if (player == null) return;
 
-        if (Vector2.Distance(transform.position, player.position) <= attackRange)
-        {
-            inRange = true;
-        }
-        else {
-            inRange = false;
-        }
+        float dist = Vector2.Distance(transform.position, player.position);
+        inRange = dist <= attackRange;
 
         if (inRange)
         {
-            if (player.position.x > transform.position.x && facingLeft == true)
+            // ✅ FIX FLIP LOGIC (TYPO FIX)
+            if (player.position.x > transform.position.x && facingLeft)
             {
                 transform.eulerAngles = new Vector3(0, -180, 0);
                 facingLeft = false;
             }
-            else if (player.position.x > transform.position.x && facingLeft == true)
+            else if (player.position.x < transform.position.x && !facingLeft)
             {
                 transform.eulerAngles = new Vector3(0, 0, 0);
                 facingLeft = true;
             }
 
-            if (Vector2.Distance(transform.position, player.position) > retrieveDistance)
+            // 🔥 CHASE
+            if (dist > retrieveDistance)
             {
                 animator.SetBool("Attack0", false);
-                transform.position = Vector2.MoveTowards(transform.position, player.position, chaseSpeed * Time.deltaTime);
+                transform.position = Vector2.MoveTowards(
+                    transform.position,
+                    player.position,
+                    chaseSpeed * Time.deltaTime
+                );
             }
             else
             {
+                // 🔥 ATTACK MODE → STOP MOVEMENT TOTAL
                 animator.SetBool("Attack0", true);
-                return;
+                return; // ⭐ INI KUNCI FIX UTAMA
             }
         }
         else
         {
+            animator.SetBool("Attack0", false);
+
             transform.Translate(Vector2.left * Time.deltaTime * moveSpeed);
+
             RaycastHit2D hit = Physics2D.Raycast(checkPoint.position, Vector2.down, distance, layerMask);
 
-            if (hit == false && facingLeft)
+            if (!hit && facingLeft)
             {
                 transform.eulerAngles = new Vector3(0, -180, 0);
                 facingLeft = false;
             }
-            else if (hit == false && facingLeft == false)
+            else if (!hit && !facingLeft)
             {
                 transform.eulerAngles = new Vector3(0, 0, 0);
                 facingLeft = true;
             }
-        } 
+        }
     }
 
+    // Dipanggil via Animation Event
     public void Attack()
     {
-       Collider2D collInfo = Physics2D.OverlapCircle(attackPoint.position, attackRadius, attackLayer);
-       
-       if (collInfo)
+        if (attackPoint == null) return;
+
+        Collider2D collInfo =
+            Physics2D.OverlapCircle(attackPoint.position, attackRadius, attackLayer);
+
+        if (collInfo != null)
         {
-            if (collInfo.gameObject.GetComponent<PlayerControll>() != null)
+            PlayerControll pc = collInfo.GetComponent<PlayerControll>();
+            if (pc != null)
             {
-                collInfo.gameObject.GetComponent<PlayerControll>().TakeDamage(1);
+                pc.TakeDamage(1);
+
+                 Camera.main.GetComponent<CameraShake>().Shake();
             }
         }
-    } 
+    }
 
     public void TakeDamage(int damage)
     {
-        if (maxHealth <=0)
-        return;
-        {
+        if (maxHealth <= 0) return;
         maxHealth -= damage;
-        }
-    }
-
-    void OnDrawGizmosSelected()
-    {
-        if (checkPoint == null) return;
-        {
-            
-        }
-        
-        Gizmos.DrawRay(checkPoint.position, Vector2.down * distance);
-
-        Gizmos.color = Color.red;
-        Gizmos.DrawWireSphere(transform.position, attackRange);
-      
-        if (attackPoint == null) return;
-        Gizmos.color = Color.pink;
-        Gizmos.DrawWireSphere(attackPoint.position, attackRadius);
-
     }
 
     void Die()
     {
-        Debug.Log(this.transform.name + "Died");
-        Destroy(this.gameObject);
+        Debug.Log(name + " Died");
+        Destroy(gameObject);
+    }
+
+    void OnDrawGizmosSelected()
+    {
+        if (checkPoint != null)
+        {
+            Gizmos.color = Color.yellow;
+            Gizmos.DrawRay(checkPoint.position, Vector2.down * distance);
+        }
+
+        Gizmos.color = Color.red;
+        Gizmos.DrawWireSphere(transform.position, attackRange);
+
+        if (attackPoint != null)
+        {
+            Gizmos.color = Color.magenta;
+            Gizmos.DrawWireSphere(attackPoint.position, attackRadius);
+        }
     }
 }
-  
