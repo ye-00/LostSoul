@@ -63,6 +63,7 @@ public class EnemyPatrol : MonoBehaviour
             else
             {
                 animator.SetBool("Attack0", true);
+                return;
             }
         }
         else
