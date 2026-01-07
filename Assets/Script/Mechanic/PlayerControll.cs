@@ -1,0 +1,220 @@
+using System.Collections.Generic;
+using UnityEngine;
+
+public class PlayerControll : MonoBehaviour
+{
+    [Header("Components")]
+    public Animator animator;
+    public Rigidbody2D rb;
+
+    [Header("Movement")]
+    public float moveSpeed = 5f;
+    public float JumpHeight = 5f;
+
+    private float movement;
+    private bool facingRight = true;
+
+    [Header("Ground")]
+    public bool isGround = true;
+    private bool groundedByCollision = false;
+    private bool wasInAir = false;
+
+    [Header("Jump")]
+    public int maxJumps = 2;
+    private int jumpCount = 0;
+
+    [Header("Ground Slam")]
+    public float groundSlamSpeed = -12f;
+    private bool hasSlammed = false;
+
+    [Header("Attack")]
+    public Transform attackPoint;
+    public float attackRange = 0.5f;
+    public LayerMask enemyLayers;
+
+    public float attackDamage = 10f;
+    public float slamDamage = 25f;
+
+    // 🔥 MULTI-HIT SUPPORT
+    private HashSet<Collider2D> hitEnemies = new HashSet<Collider2D>();
+
+    void Update()
+    {
+        // ================= MOVE =================
+        movement = Input.GetAxis("Horizontal");
+        rb.linearVelocity = new Vector2(movement * moveSpeed, rb.linearVelocity.y);
+        animator.SetFloat("Run", Mathf.Abs(movement));
+
+        // ================= FLIP =================
+        if (movement < 0 && facingRight) Flip();
+        else if (movement > 0 && !facingRight) Flip();
+
+        if (!isGround)
+            wasInAir = true;
+
+        // ================= JUMP =================
+        if (Input.GetKeyDown(KeyCode.Space))
+        {
+            if (isGround)
+            {
+                jumpCount = 1;
+                isGround = false;
+                groundedByCollision = false;
+                hasSlammed = false;
+
+                DoJump();
+                animator.SetBool("Jump", true);
+            }
+            else if (jumpCount == 1 && maxJumps >= 2)
+            {
+                jumpCount = 2;
+                DoJump();
+                animator.SetBool("Jump", false);
+                animator.SetTrigger("DoubleJump");
+            }
+        }
+
+        // ================= FALL =================
+        bool inAirAttack =
+            animator.GetCurrentAnimatorStateInfo(0).IsName("Jump-Attack") ||
+            animator.GetCurrentAnimatorStateInfo(0).IsName("GroundSlam");
+
+        if (!isGround && rb.linearVelocity.y < -0.1f && !inAirAttack && !hasSlammed)
+            animator.SetBool("Falling", true);
+        else
+            animator.SetBool("Falling", false);
+
+        // ATTACK 1
+        if (Input.GetKeyDown(KeyCode.K))
+        {
+            if (isGround)
+            {
+                animator.SetTrigger("Attack");
+            }
+            else if (jumpCount == 1 && !hasSlammed)
+            {
+                animator.SetBool("Jump", false);
+                animator.SetBool("Falling", false);
+                animator.SetTrigger("Jump-Attack");
+            }
+        }
+
+        // ATTACK 2
+        if (Input.GetKeyDown(KeyCode.J))
+        {
+            if (isGround)
+            {
+                animator.SetTrigger("Attack-2");
+            }
+            else if (!hasSlammed)
+            {
+                hasSlammed = true;
+                rb.linearVelocity = new Vector2(rb.linearVelocity.x, groundSlamSpeed);
+                animator.SetBool("Jump", false);
+                animator.SetBool("Falling", false);
+                animator.SetTrigger("GroundSlam");
+            }
+        }
+    }
+
+    void DoJump()
+    {
+        rb.linearVelocity = new Vector2(rb.linearVelocity.x, 0f);
+        rb.AddForce(Vector2.up * JumpHeight, ForceMode2D.Impulse);
+    }
+
+    // ================= ANIMATION EVENTS =================
+
+    // 🔥 PANGGIL DI FRAME PEDANG KENA
+    public void DealAttackDamage()
+    {
+        if (attackPoint == null) return;
+
+        Collider2D[] enemies = Physics2D.OverlapCircleAll(
+            attackPoint.position,
+            attackRange,
+            enemyLayers
+        );
+
+        foreach (Collider2D enemy in enemies)
+        {
+            if (hitEnemies.Contains(enemy)) continue;
+
+            hitEnemies.Add(enemy);
+
+            EnemyHealth hp = enemy.GetComponent<EnemyHealth>();
+            if (hp != null)
+                hp.TakeDamage(attackDamage);
+        }
+    }
+
+    // 🔥 PANGGIL DI FRAME AWAL ANIMASI ATTACK
+    public void ResetHitEnemies()
+    {
+        hitEnemies.Clear();
+    }
+
+    // ================= COLLISION =================
+    private void OnCollisionEnter2D(Collision2D collision)
+    {
+        if (collision.gameObject.CompareTag("Enemy") &&
+            animator.GetCurrentAnimatorStateInfo(0).IsName("GroundSlam"))
+        {
+            EnemyHealth hp = collision.gameObject.GetComponent<EnemyHealth>();
+            if (hp != null)
+                hp.TakeDamage(slamDamage);
+        }
+
+        if (!collision.gameObject.CompareTag("Ground"))
+            return;
+
+        foreach (ContactPoint2D contact in collision.contacts)
+        {
+            if (contact.normal.y > 0.5f)
+            {
+                if (!isGround && wasInAir)
+                {
+                    if (animator.GetCurrentAnimatorStateInfo(0).IsName("GroundSlam"))
+                        animator.SetTrigger("SlamEnd");
+                    else
+                        animator.SetTrigger("Landing");
+                }
+
+                isGround = true;
+                groundedByCollision = true;
+                wasInAir = false;
+                jumpCount = 0;
+                hasSlammed = false;
+
+                animator.SetBool("Jump", false);
+                animator.SetBool("Falling", false);
+                return;
+            }
+        }
+    }
+
+    private void OnCollisionExit2D(Collision2D collision)
+    {
+        if (!collision.gameObject.CompareTag("Ground"))
+            return;
+
+        if (groundedByCollision)
+        {
+            isGround = false;
+            groundedByCollision = false;
+        }
+    }
+
+    void Flip()
+    {
+        facingRight = !facingRight;
+        transform.eulerAngles = new Vector3(0f, facingRight ? 0f : 180f, 0f);
+    }
+
+    void OnDrawGizmosSelected()
+    {
+        if (attackPoint == null) return;
+        Gizmos.color = Color.red;
+        Gizmos.DrawWireSphere(attackPoint.position, attackRange);
+    }
+}
