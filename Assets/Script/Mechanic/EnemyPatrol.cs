@@ -97,7 +97,7 @@ public class EnemyPatrol : MonoBehaviour
             PlayerControll pc = collInfo.GetComponent<PlayerControll>();
             if (pc != null)
             {
-                pc.TakeDamage(1);
+                pc.TakeDamage(3);
 
                  Camera.main.GetComponent<CameraShake>().Shake();
             }
