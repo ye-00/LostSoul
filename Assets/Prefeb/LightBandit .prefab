@@ -213,7 +213,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9af08f9ad55a4c21aa01f4321fabd4a7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyPatrol
-  maxHealth: 3
+  maxHealth: 2
   moveSpeed: 2
   checkPoint: {fileID: 8507332425602239523}
   distance: 2
@@ -227,7 +227,7 @@ MonoBehaviour:
   chaseSpeed: 4
   animator: {fileID: 1257703950493802573}
   attackPoint: {fileID: 7874137780741913586}
-  attackRadius: 1.51
+  attackRadius: 1.39
   attackLayer:
     serializedVersion: 2
     m_Bits: 128
