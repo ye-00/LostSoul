@@ -22,6 +22,9 @@ public class PlayerControll : MonoBehaviour
     public bool isGround = true;
     private bool groundedByCollision = false;
     private bool wasInAir = false;
+    public Transform groundCheck;
+    public float groundCheckRadius = 0.2f;
+    public LayerMask groundLayer;
 
     [Header("Jump")]
     public int maxJumps = 2;
@@ -198,17 +201,6 @@ public class PlayerControll : MonoBehaviour
         }
     }
 
-    private void OnCollisionExit2D(Collision2D collision)
-    {
-        if (!collision.gameObject.CompareTag("Ground"))
-            return;
-
-        if (groundedByCollision)
-        {
-            isGround = false;
-            groundedByCollision = false;
-        }
-    }
 
     void Flip()
     {
@@ -233,4 +225,54 @@ public class PlayerControll : MonoBehaviour
         FindAnyObjectByType<GameManager>().isGameActive = false;
         Destroy(this.gameObject);
     }
+
+    void CheckGround()
+{
+    bool grounded = Physics2D.OverlapCircle(
+        groundCheck.position,
+        groundCheckRadius,
+        groundLayer
+    );
+
+    // BARU NYENTUH TANAH (LANDING)
+    if (grounded && !isGround)
+    {
+        Debug.Log($"Ground:{isGround} JumpCount:{jumpCount}");
+        if (wasInAir)
+        {
+            if (animator.GetCurrentAnimatorStateInfo(0).IsName("GroundSlam"))
+                animator.SetTrigger("SlamEnd");
+            else
+                animator.SetTrigger("Landing");
+        }
+
+        isGround = true;
+        wasInAir = false;
+
+        jumpCount = 0;      // ✅ reset HANYA saat landing
+        hasSlammed = false;
+
+        animator.SetBool("Jump", false);
+        animator.SetBool("Falling", false);
+    }
+    // MASIH DI TANAH
+    else if (grounded && isGround)
+    {
+        // do nothing
+    }
+
+   // DI UDARA
+    else
+    {
+        isGround = false;
+    }
+}
+
+
+
+void FixedUpdate()
+{
+    CheckGround();
+}
+
 }

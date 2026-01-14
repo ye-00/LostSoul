@@ -11449,7 +11449,7 @@ GameObject:
   - component: {fileID: 1722583519}
   - component: {fileID: 1722583518}
   - component: {fileID: 1722583517}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Ground (1)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -12856,61 +12856,21 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: 670947317737533223, guid: 75c48fb1d6d5bd806b54a1571b00c491, type: 3}
-      propertyPath: m_Size.y
-      value: 1.8678707
-      objectReference: {fileID: 0}
-    - target: {fileID: 670947317737533223, guid: 75c48fb1d6d5bd806b54a1571b00c491, type: 3}
-      propertyPath: m_Offset.y
-      value: -0.2369594
-      objectReference: {fileID: 0}
-    - target: {fileID: 1618348581824293033, guid: 75c48fb1d6d5bd806b54a1571b00c491, type: 3}
-      propertyPath: m_SortingOrder
-      value: 0
-      objectReference: {fileID: 0}
     - target: {fileID: 2120847574814555166, guid: 75c48fb1d6d5bd806b54a1571b00c491, type: 3}
       propertyPath: m_Name
       value: Player
-      objectReference: {fileID: 0}
-    - target: {fileID: 2120847574814555166, guid: 75c48fb1d6d5bd806b54a1571b00c491, type: 3}
-      propertyPath: m_Layer
-      value: 7
-      objectReference: {fileID: 0}
-    - target: {fileID: 2120847574814555166, guid: 75c48fb1d6d5bd806b54a1571b00c491, type: 3}
-      propertyPath: m_IsActive
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 3960322675706279494, guid: 75c48fb1d6d5bd806b54a1571b00c491, type: 3}
-      propertyPath: m_Layer
-      value: 7
       objectReference: {fileID: 0}
     - target: {fileID: 5170644695958076206, guid: 75c48fb1d6d5bd806b54a1571b00c491, type: 3}
       propertyPath: health
       value: 
       objectReference: {fileID: 1114250449}
     - target: {fileID: 5170644695958076206, guid: 75c48fb1d6d5bd806b54a1571b00c491, type: 3}
-      propertyPath: maxHealth
-      value: 100
-      objectReference: {fileID: 0}
-    - target: {fileID: 5170644695958076206, guid: 75c48fb1d6d5bd806b54a1571b00c491, type: 3}
       propertyPath: JumpHeight
-      value: 9
+      value: 12
       objectReference: {fileID: 0}
     - target: {fileID: 5170644695958076206, guid: 75c48fb1d6d5bd806b54a1571b00c491, type: 3}
-      propertyPath: attackRange
-      value: 0.87
-      objectReference: {fileID: 0}
-    - target: {fileID: 5170644695958076206, guid: 75c48fb1d6d5bd806b54a1571b00c491, type: 3}
-      propertyPath: attackRadius
-      value: 1.34
-      objectReference: {fileID: 0}
-    - target: {fileID: 5170644695958076206, guid: 75c48fb1d6d5bd806b54a1571b00c491, type: 3}
-      propertyPath: controlsEnable
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5170644695958076206, guid: 75c48fb1d6d5bd806b54a1571b00c491, type: 3}
-      propertyPath: attackLayer.m_Bits
-      value: 8
+      propertyPath: groundLayer.m_Bits
+      value: 320
       objectReference: {fileID: 0}
     - target: {fileID: 7545544394069057714, guid: 75c48fb1d6d5bd806b54a1571b00c491, type: 3}
       propertyPath: m_LocalPosition.x
